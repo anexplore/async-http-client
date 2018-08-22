@@ -55,6 +55,7 @@ public class DefaultRequest implements Request {
   private final Realm realm;
   private final File file;
   private final Boolean followRedirect;
+  private final Integer maxRedirects;
   private final int requestTimeout;
   private final int readTimeout;
   private final long rangeOffset;
@@ -83,6 +84,7 @@ public class DefaultRequest implements Request {
                         Realm realm,
                         File file,
                         Boolean followRedirect,
+                        Integer maxRedirects,
                         int requestTimeout,
                         int readTimeout,
                         long rangeOffset,
@@ -108,6 +110,7 @@ public class DefaultRequest implements Request {
     this.realm = realm;
     this.file = file;
     this.followRedirect = followRedirect;
+    this.maxRedirects = maxRedirects;
     this.requestTimeout = requestTimeout;
     this.readTimeout = readTimeout;
     this.rangeOffset = rangeOffset;
@@ -214,6 +217,12 @@ public class DefaultRequest implements Request {
   @Override
   public Boolean getFollowRedirect() {
     return followRedirect;
+  }
+  
+  /* add by @anexplore */
+  @Override
+  public Integer getMaxRedirects() {
+    return maxRedirects;
   }
 
   @Override

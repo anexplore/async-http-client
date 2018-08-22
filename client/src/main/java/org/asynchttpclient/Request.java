@@ -150,7 +150,13 @@ public interface Request {
    * @return if this request is to follow redirects. Non null values means "override config value".
    */
   Boolean getFollowRedirect();
-
+  
+  /**
+   * add by @anexplore
+   * @return max redirect count for this request
+   */
+  Integer getMaxRedirects();
+  
   /**
    * @return the request timeout. Non zero values means "override config value".
    */
