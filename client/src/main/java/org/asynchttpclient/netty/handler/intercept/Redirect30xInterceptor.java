@@ -17,6 +17,7 @@ import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http.cookie.ClientCookieDecoder;
 import io.netty.handler.codec.http.cookie.Cookie;
 import org.asynchttpclient.AsyncHttpClientConfig;
 import org.asynchttpclient.Realm;
@@ -24,7 +25,6 @@ import org.asynchttpclient.Realm.AuthScheme;
 import org.asynchttpclient.Request;
 import org.asynchttpclient.RequestBuilder;
 import org.asynchttpclient.cookie.CookieStore;
-import org.asynchttpclient.handler.MaxRedirectException;
 import org.asynchttpclient.netty.NettyResponseFuture;
 import org.asynchttpclient.netty.channel.ChannelManager;
 import org.asynchttpclient.netty.request.NettyRequestSender;
@@ -39,9 +39,9 @@ import java.util.Set;
 import static io.netty.handler.codec.http.HttpHeaderNames.*;
 import static org.asynchttpclient.util.HttpConstants.Methods.GET;
 import static org.asynchttpclient.util.HttpConstants.ResponseStatusCodes.*;
+import static org.asynchttpclient.util.HttpConstants.ExtrasHeaders.*;
 import static org.asynchttpclient.util.HttpUtils.followRedirect;
 import static org.asynchttpclient.util.MiscUtils.isNonEmpty;
-import static org.asynchttpclient.util.ThrowableUtil.unknownStackTrace;
 
 public class Redirect30xInterceptor {
 
@@ -59,14 +59,13 @@ public class Redirect30xInterceptor {
   private final ChannelManager channelManager;
   private final AsyncHttpClientConfig config;
   private final NettyRequestSender requestSender;
-  private final MaxRedirectException maxRedirectException;
-
+  private final ClientCookieDecoder cookieDecoder;
+  
   Redirect30xInterceptor(ChannelManager channelManager, AsyncHttpClientConfig config, NettyRequestSender requestSender) {
     this.channelManager = channelManager;
     this.config = config;
     this.requestSender = requestSender;
-    maxRedirectException = unknownStackTrace(new MaxRedirectException("Maximum redirect reached: " + config.getMaxRedirects()), Redirect30xInterceptor.class,
-            "exitAfterHandlingRedirect");
+    this.cookieDecoder = config.isUseLaxCookieEncoder() ? ClientCookieDecoder.LAX : ClientCookieDecoder.STRICT;
   }
 
   public boolean exitAfterHandlingRedirect(Channel channel,
@@ -77,9 +76,19 @@ public class Redirect30xInterceptor {
                                            Realm realm) throws Exception {
 
     if (followRedirect(config, request)) {
-      if (future.incrementAndGetCurrentRedirectCount() >= config.getMaxRedirects()) {
-        throw maxRedirectException;
-
+      // Modify by @anexplore
+      // Add support for Refresh header, eg, Refresh: 5; https://www.google.com/
+      HttpHeaders responseHeaders = response.headers();
+      String location = responseHeaders.get(LOCATION);
+      if (hasRefreshHeader(response)) {
+        location = decodeRefreshUri(responseHeaders.get(REFRESH));
+      }
+      if (isNonEmpty(location)) {
+        return false;
+      }
+      int redirectCount = future.incrementAndGetCurrentRedirectCount();
+      if (request.getMaxRedirects() == null ? redirectCount > config.getMaxRedirects() : redirectCount > request.getMaxRedirects() ) {
+        return false;
       } else {
         // We must allow auth handling again.
         future.setInAuth(false);
@@ -97,6 +106,7 @@ public class Redirect30xInterceptor {
                 .setNameResolver(request.getNameResolver())
                 .setProxyServer(request.getProxyServer())
                 .setRealm(request.getRealm())
+                .setReadTimeout(request.getReadTimeout())
                 .setRequestTimeout(request.getRequestTimeout());
 
         if (keepBody) {
@@ -120,8 +130,6 @@ public class Redirect30xInterceptor {
         final boolean initialConnectionKeepAlive = future.isKeepAlive();
         final Object initialPartitionKey = future.getPartitionKey();
 
-        HttpHeaders responseHeaders = response.headers();
-        String location = responseHeaders.get(LOCATION);
         Uri newUri = Uri.create(future.getUri(), location);
 
         LOGGER.debug("Redirecting to {}", newUri);
@@ -133,6 +141,14 @@ public class Redirect30xInterceptor {
           if (!cookies.isEmpty())
             for (Cookie cookie : cookies)
               requestBuilder.addOrReplaceCookie(cookie);
+        } else {
+          // When CookieStore is null, propagate set-cookie. add by @anexplore
+          for (String cookieStr : responseHeaders.getAll(SET_COOKIE)) {
+            Cookie c = cookieDecoder.decode(cookieStr);
+            if (c != null) {
+              requestBuilder.addOrReplaceCookie(c);
+            }
+          }
         }
 
         boolean sameBase = request.getUri().isSameBase(newUri);
@@ -184,5 +200,30 @@ public class Redirect30xInterceptor {
               .remove(PROXY_AUTHORIZATION);
     }
     return headers;
+  }
+  
+  /**
+   * add by @anexplore
+   * @param request
+   * @return if has Refresh header
+   */
+  private boolean hasRefreshHeader(HttpResponse response) {
+    return !isNonEmpty(response.headers().get(REFRESH));
+  }
+  
+  /**
+   * add by @anexplore
+   * @param refresh
+   * @return refresh target uri
+   */
+  private String decodeRefreshUri(String refresh) {
+    if (isNonEmpty(refresh)) {
+      return null;
+    }
+    int eqPos = refresh.indexOf('=');
+    if (eqPos >= 0 && eqPos < refresh.length() - 1) {
+      return refresh.substring(eqPos + 1).trim();
+    }
+    return null;
   }
 }

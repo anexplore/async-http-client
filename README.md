@@ -1,5 +1,12 @@
 # Async Http Client [![Build Status](https://travis-ci.org/AsyncHttpClient/async-http-client.svg?branch=master)](https://travis-ci.org/AsyncHttpClient/async-http-client) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.asynchttpclient/async-http-client/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.asynchttpclient/async-http-client/)
 
+## 修改
+### 2018-08-23
+* 为单个Request增加最大跳转次数参数
+* 修改跳转时Cookie策略，在没有CookieStore时仍然将Set-Cookie带入下次请求
+* 修改newNettyRequest方法将request.headers以及cookies中的cookie合并   
+
+------
 Follow [@AsyncHttpClient](https://twitter.com/AsyncHttpClient) on Twitter.
 
 The AsyncHttpClient (AHC) library allows Java applications to easily execute HTTP requests and asynchronously process HTTP responses.

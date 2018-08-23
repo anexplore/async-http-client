@@ -146,7 +146,12 @@ public final class NettyRequestFactory {
       headers.set(request.getHeaders());
 
       if (isNonEmpty(request.getCookies())) {
-        headers.set(COOKIE, cookieEncoder.encode(request.getCookies()));
+        // merge cookies when cookie string exists both in request.headers and request.cookies by @anexplore
+        if (isNonEmpty(headers.get(COOKIE))) {
+          headers.set(COOKIE, cookieEncoder.encode(request.getCookies()) + "; " + headers.get(COOKIE));
+        } else {
+          headers.set(COOKIE, cookieEncoder.encode(request.getCookies()));
+        }
       }
 
       String userDefinedAcceptEncoding = headers.get(ACCEPT_ENCODING);

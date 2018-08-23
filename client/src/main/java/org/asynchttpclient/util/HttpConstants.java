@@ -15,6 +15,7 @@ package org.asynchttpclient.util;
 
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.util.AsciiString;
 
 public final class HttpConstants {
 
@@ -50,5 +51,12 @@ public final class HttpConstants {
 
     private ResponseStatusCodes() {
     }
+  }
+  
+  public static final class ExtrasHeaders {
+    private ExtrasHeaders() {
+    }
+    
+    public static final AsciiString REFRESH = AsciiString.cached("refresh");
   }
 }
