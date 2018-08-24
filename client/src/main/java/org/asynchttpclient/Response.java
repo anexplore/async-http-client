@@ -81,7 +81,14 @@ public interface Response {
    * @return the entire response body as a String.
    */
   String getResponseBody();
-
+  
+  /**
+   * The entire response body raw size in bytes(before uncompress)
+   * 
+   * @return the entire response body raw size in bytes(before uncompress)
+   */
+  int getRawResponseBodySize();
+  
   /**
    * Return the request {@link Uri}. Note that if the request got redirected, the value of the {@link Uri} will be the last valid redirect url.
    *

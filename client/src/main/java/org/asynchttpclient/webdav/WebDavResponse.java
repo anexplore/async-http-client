@@ -117,4 +117,9 @@ public class WebDavResponse implements Response {
   public Document getBodyAsXML() {
     return document;
   }
+
+  @Override
+  public int getRawResponseBodySize() {
+    return response.getRawResponseBodySize();
+  }
 }

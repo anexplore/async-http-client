@@ -34,6 +34,11 @@ public abstract class HttpResponseBodyPart {
   public abstract int length();
 
   /**
+   * @return length of this part in bytes before uncompress
+   */
+  public abstract int rawLength();
+  
+  /**
    * @return the response body's part bytes received.
    */
   public abstract byte[] getBodyPartBytes();

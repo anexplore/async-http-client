@@ -43,6 +43,7 @@ import static org.asynchttpclient.util.HttpConstants.ExtrasHeaders.*;
 import static org.asynchttpclient.util.HttpUtils.followRedirect;
 import static org.asynchttpclient.util.MiscUtils.isNonEmpty;
 
+
 public class Redirect30xInterceptor {
 
   public static final Set<Integer> REDIRECT_STATUSES = new HashSet<>();
@@ -83,7 +84,7 @@ public class Redirect30xInterceptor {
       if (hasRefreshHeader(response)) {
         location = decodeRefreshUri(responseHeaders.get(REFRESH));
       }
-      if (isNonEmpty(location)) {
+      if (location == null || location.isEmpty()) {
         return false;
       }
       int redirectCount = future.incrementAndGetCurrentRedirectCount();
@@ -208,7 +209,7 @@ public class Redirect30xInterceptor {
    * @return if has Refresh header
    */
   private boolean hasRefreshHeader(HttpResponse response) {
-    return !isNonEmpty(response.headers().get(REFRESH));
+    return isNonEmpty(response.headers().get(REFRESH));
   }
   
   /**
@@ -217,7 +218,7 @@ public class Redirect30xInterceptor {
    * @return refresh target uri
    */
   private String decodeRefreshUri(String refresh) {
-    if (isNonEmpty(refresh)) {
+    if (refresh == null || refresh.isEmpty()) {
       return null;
     }
     int eqPos = refresh.indexOf('=');

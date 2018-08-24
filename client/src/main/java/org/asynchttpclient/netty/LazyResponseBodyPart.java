@@ -24,12 +24,20 @@ import java.nio.ByteBuffer;
 public class LazyResponseBodyPart extends HttpResponseBodyPart {
 
   private final ByteBuf buf;
-
+  private final int rawLength;
+  
   public LazyResponseBodyPart(ByteBuf buf, boolean last) {
     super(last);
     this.buf = buf;
+    this.rawLength = this.buf.readableBytes();
   }
 
+  public LazyResponseBodyPart(ByteBuf buf, int rawLength, boolean last) {
+    super(last);
+    this.buf = buf;
+    this.rawLength = rawLength;
+  }
+  
   public ByteBuf getBuf() {
     return buf;
   }
@@ -39,6 +47,11 @@ public class LazyResponseBodyPart extends HttpResponseBodyPart {
     return buf.readableBytes();
   }
 
+  @Override
+  public int rawLength() {
+    return rawLength;
+  }
+  
   /**
    * Return the response body's part bytes received.
    *

@@ -319,23 +319,29 @@ public interface AsyncHttpClientConfig {
   ByteBufAllocator getAllocator();
 
   int getIoThreadsCount();
+  
+  /**
+   * @author anexplore
+   * @return max response size for http response 
+   */
+  int getMaxResponseBodySize();
 
   enum ResponseBodyPartFactory {
 
     EAGER {
       @Override
-      public HttpResponseBodyPart newResponseBodyPart(ByteBuf buf, boolean last) {
-        return new EagerResponseBodyPart(buf, last);
+      public HttpResponseBodyPart newResponseBodyPart(ByteBuf buf, Integer rawLength, boolean last) {
+        return rawLength == null ? new EagerResponseBodyPart(buf, last) : new EagerResponseBodyPart(buf, rawLength, last);
       }
     },
 
     LAZY {
       @Override
-      public HttpResponseBodyPart newResponseBodyPart(ByteBuf buf, boolean last) {
-        return new LazyResponseBodyPart(buf, last);
+      public HttpResponseBodyPart newResponseBodyPart(ByteBuf buf, Integer rawLength, boolean last) {
+        return rawLength == null ? new LazyResponseBodyPart(buf, last) : new LazyResponseBodyPart(buf, rawLength, last);
       }
     };
 
-    public abstract HttpResponseBodyPart newResponseBodyPart(ByteBuf buf, boolean last);
+    public abstract HttpResponseBodyPart newResponseBodyPart(ByteBuf buf, Integer rawLength, boolean last);
   }
 }

@@ -69,7 +69,8 @@ public final class AsyncHttpClientConfigDefaults {
   public static final String SHUTDOWN_TIMEOUT_CONFIG = "shutdownTimeout";
   public static final String USE_NATIVE_TRANSPORT_CONFIG = "useNativeTransport";
   public static final String IO_THREADS_COUNT_CONFIG = "ioThreadsCount";
-
+  public static final String MAX_RESPONSE_BODY_SIZE = "maxResponseBodySize";
+  
   public static final String AHC_VERSION;
 
   static {
@@ -283,5 +284,9 @@ public final class AsyncHttpClientConfigDefaults {
 
   public static int defaultIoThreadsCount() {
     return AsyncHttpClientConfigHelper.getAsyncHttpClientConfig().getInt(ASYNC_CLIENT_CONFIG_ROOT + IO_THREADS_COUNT_CONFIG);
+  }
+  
+  public static int defaultMaxResponseBodySize() {
+    return AsyncHttpClientConfigHelper.getAsyncHttpClientConfig().getInt(ASYNC_CLIENT_CONFIG_ROOT + MAX_RESPONSE_BODY_SIZE);
   }
 }

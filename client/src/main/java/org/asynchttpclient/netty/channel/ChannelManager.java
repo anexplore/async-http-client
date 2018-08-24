@@ -44,6 +44,7 @@ import org.asynchttpclient.netty.NettyResponseFuture;
 import org.asynchttpclient.netty.OnLastHttpContentCallback;
 import org.asynchttpclient.netty.handler.AsyncHttpClientHandler;
 import org.asynchttpclient.netty.handler.HttpHandler;
+import org.asynchttpclient.netty.handler.InputTrafficCountHandler;
 import org.asynchttpclient.netty.handler.WebSocketHandler;
 import org.asynchttpclient.netty.request.NettyRequestSender;
 import org.asynchttpclient.netty.ssl.DefaultSslEngineFactory;
@@ -77,6 +78,7 @@ public class ChannelManager {
   public static final String AHC_HTTP_HANDLER = "ahc-http";
   public static final String AHC_WS_HANDLER = "ahc-ws";
   public static final String LOGGING_HANDLER = "logging";
+  public static final String INPUT_TRAFFIC_HANDLER = "inputTrafficHandler";
   private static final Logger LOGGER = LoggerFactory.getLogger(ChannelManager.class);
   private final AsyncHttpClientConfig config;
   private final SslEngineFactory sslEngineFactory;
@@ -214,6 +216,7 @@ public class ChannelManager {
       protected void initChannel(Channel ch) {
         ChannelPipeline pipeline = ch.pipeline()
                 .addLast(HTTP_CLIENT_CODEC, newHttpClientCodec())
+                .addLast(INPUT_TRAFFIC_HANDLER, new InputTrafficCountHandler())
                 .addLast(INFLATER_HANDLER, newHttpContentDecompressor())
                 .addLast(CHUNKED_WRITER_HANDLER, new ChunkedWriteHandler())
                 .addLast(AHC_HTTP_HANDLER, httpHandler);

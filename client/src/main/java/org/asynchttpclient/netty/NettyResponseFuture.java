@@ -76,7 +76,12 @@ public final class NettyResponseFuture<V> implements ListenableFuture<V> {
   @SuppressWarnings("rawtypes")
   private static final AtomicReferenceFieldUpdater<NettyResponseFuture, Object> PARTITION_KEY_LOCK_FIELD = AtomicReferenceFieldUpdater
           .newUpdater(NettyResponseFuture.class, Object.class, "partitionKeyLock");
-
+  @SuppressWarnings("rawtypes")
+  private static final AtomicIntegerFieldUpdater<NettyResponseFuture> RAW_BODY_SIZE_UPDATER = AtomicIntegerFieldUpdater
+          .newUpdater(NettyResponseFuture.class, "latestRawBodyPartSize");
+  @SuppressWarnings("rawtypes")
+  private static final AtomicIntegerFieldUpdater<NettyResponseFuture> REAL_BODY_SIZE_UPDATER = AtomicIntegerFieldUpdater
+          .newUpdater(NettyResponseFuture.class, "realBodySize");
   private final long start = unpreciseMillisTime();
   private final ChannelPoolPartitioning connectionPoolPartitioning;
   private final ConnectionSemaphore connectionSemaphore;
@@ -91,6 +96,12 @@ public final class NettyResponseFuture<V> implements ListenableFuture<V> {
   private volatile int inAuth = 0;
   private volatile int inProxyAuth = 0;
   private volatile int statusReceived = 0;
+  // raw size of the lastest http body part size
+  @SuppressWarnings("unused")
+  private volatile int latestRawBodyPartSize = 0;
+  // body size after decompress
+  @SuppressWarnings("unused")
+  private volatile int realBodySize = 0;
   @SuppressWarnings("unused")
   private volatile int contentProcessed = 0;
   @SuppressWarnings("unused")
@@ -362,6 +373,14 @@ public final class NettyResponseFuture<V> implements ListenableFuture<V> {
     return REDIRECT_COUNT_UPDATER.incrementAndGet(this);
   }
 
+  public int addAndGetRealBodySize(int bodyPartSize) {
+    return REAL_BODY_SIZE_UPDATER.addAndGet(this, bodyPartSize);
+  }
+  
+  public int getAndSetLastestRawBodyPartSize(int rawBodyPartSize) {
+    return RAW_BODY_SIZE_UPDATER.getAndSet(this, rawBodyPartSize);
+  }
+  
   public TimeoutsHolder getTimeoutsHolder() {
     return TIMEOUTS_HOLDER_FIELD.get(this);
   }

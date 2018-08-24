@@ -131,6 +131,7 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
   private final Consumer<Channel> wsAdditionalChannelInitializer;
   private final ResponseBodyPartFactory responseBodyPartFactory;
   private final int ioThreadsCount;
+  private final int maxResponseBodySize;
 
   private DefaultAsyncHttpClientConfig(// http
                                        boolean followRedirect,
@@ -213,7 +214,8 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
                                        Consumer<Channel> httpAdditionalChannelInitializer,
                                        Consumer<Channel> wsAdditionalChannelInitializer,
                                        ResponseBodyPartFactory responseBodyPartFactory,
-                                       int ioThreadsCount) {
+                                       int ioThreadsCount,
+                                       int maxResponseBodySize) {
 
     // http
     this.followRedirect = followRedirect;
@@ -299,6 +301,7 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
     this.wsAdditionalChannelInitializer = wsAdditionalChannelInitializer;
     this.responseBodyPartFactory = responseBodyPartFactory;
     this.ioThreadsCount = ioThreadsCount;
+    this.maxResponseBodySize = maxResponseBodySize;
   }
 
   @Override
@@ -649,7 +652,12 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
   public int getIoThreadsCount() {
     return ioThreadsCount;
   }
-
+  
+  @Override
+  public int getMaxResponseBodySize() {
+    return maxResponseBodySize;
+  }
+  
   /**
    * Builder for an {@link AsyncHttpClient}
    */
@@ -740,7 +748,8 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
     private Consumer<Channel> wsAdditionalChannelInitializer;
     private ResponseBodyPartFactory responseBodyPartFactory = ResponseBodyPartFactory.EAGER;
     private int ioThreadsCount = defaultIoThreadsCount();
-
+    private int maxResponseBodySize = defaultMaxResponseBodySize();
+    
     public Builder() {
     }
 
@@ -820,6 +829,7 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
       wsAdditionalChannelInitializer = config.getWsAdditionalChannelInitializer();
       responseBodyPartFactory = config.getResponseBodyPartFactory();
       ioThreadsCount = config.getIoThreadsCount();
+      maxResponseBodySize = config.getMaxResponseBodySize();
     }
 
     // http
@@ -1205,7 +1215,12 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
       this.ioThreadsCount = ioThreadsCount;
       return this;
     }
-
+    
+    public Builder setMaxResponseBodySize(int maxResponseBodySize) {
+      this.maxResponseBodySize = maxResponseBodySize;
+      return this;
+    }
+    
     private ProxyServerSelector resolveProxyServerSelector() {
       if (proxyServerSelector != null)
         return proxyServerSelector;
@@ -1288,7 +1303,8 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
               httpAdditionalChannelInitializer,
               wsAdditionalChannelInitializer,
               responseBodyPartFactory,
-              ioThreadsCount);
+              ioThreadsCount,
+              maxResponseBodySize);
     }
   }
 }

@@ -22,6 +22,7 @@ import org.asynchttpclient.AsyncHandler;
 import org.asynchttpclient.AsyncHandler.State;
 import org.asynchttpclient.AsyncHttpClientConfig;
 import org.asynchttpclient.HttpResponseBodyPart;
+import org.asynchttpclient.exception.TooLongResponseBodyException;
 import org.asynchttpclient.handler.StreamedAsyncHandler;
 import org.asynchttpclient.netty.NettyResponseFuture;
 import org.asynchttpclient.netty.NettyResponseStatus;
@@ -73,7 +74,14 @@ public final class HttpHandler extends AsyncHttpClientHandler {
 
     NettyResponseStatus status = new NettyResponseStatus(future.getUri(), response, channel);
     HttpHeaders responseHeaders = response.headers();
-
+    // check content-length @anexplore
+    if (config.getMaxResponseBodySize() > 0) {
+      Integer contentLength = responseHeaders.getInt(HttpHeaderNames.CONTENT_LENGTH);
+      if (contentLength != null && contentLength > config.getMaxResponseBodySize()) {
+        throw new TooLongResponseBodyException(
+            String.format("response body size %d exceed max size %d", contentLength, config.getMaxResponseBodySize()));
+      }
+    }
     if (!interceptors.exitAfterIntercept(channel, future, handler, response, status, responseHeaders)) {
       boolean abort = abortAfterHandlingStatus(handler, status) || //
               abortAfterHandlingHeaders(handler, responseHeaders) || //
@@ -104,8 +112,17 @@ public final class HttpHandler extends AsyncHttpClientHandler {
 
     ByteBuf buf = chunk.content();
     if (!abort && !(handler instanceof StreamedAsyncHandler) && (buf.isReadable() || last)) {
-      HttpResponseBodyPart bodyPart = config.getResponseBodyPartFactory().newResponseBodyPart(buf, last);
+      int rawBodyPartSize = future.getAndSetLastestRawBodyPartSize(0);
+      HttpResponseBodyPart bodyPart = config.getResponseBodyPartFactory().newResponseBodyPart(buf, rawBodyPartSize, last);
       abort = handler.onBodyPartReceived(bodyPart) == State.ABORT;
+      // exceed max body size ? add by @anexplore
+      if (config.getMaxResponseBodySize() > 0) {
+        int currentRealBodySize = future.addAndGetRealBodySize(bodyPart.length());
+        if (currentRealBodySize > config.getMaxResponseBodySize()) {
+          throw new TooLongResponseBodyException(
+              String.format("response body size %d exceed max size %d", currentRealBodySize, config.getMaxResponseBodySize()));
+        }
+      }
     }
 
     if (abort || last) {

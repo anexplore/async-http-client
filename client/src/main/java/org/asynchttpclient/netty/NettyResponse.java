@@ -201,6 +201,18 @@ public class NettyResponse implements Response {
   }
 
   @Override
+  public int getRawResponseBodySize() {
+    if (!isNonEmpty(bodyParts)) {
+      return 0;
+    }
+    int size = 0;
+    for (HttpResponseBodyPart part : bodyParts) {
+      size += part.rawLength();
+    }
+    return size;
+  }
+  
+  @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append(getClass().getSimpleName()).append(" {\n")

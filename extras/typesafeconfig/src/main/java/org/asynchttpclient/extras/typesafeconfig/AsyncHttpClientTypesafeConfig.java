@@ -410,4 +410,9 @@ public class AsyncHttpClientTypesafeConfig implements AsyncHttpClientConfig {
         ? Optional.ofNullable(func.apply(key))
         : Optional.empty();
   }
+
+  @Override
+  public int getMaxResponseBodySize() {
+	return getIntegerOpt(MAX_RESPONSE_BODY_SIZE).orElse(defaultMaxResponseBodySize());
+  }
 }
