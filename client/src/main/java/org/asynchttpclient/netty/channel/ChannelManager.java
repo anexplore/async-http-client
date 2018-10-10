@@ -348,7 +348,7 @@ public class ChannelManager {
       if (!isSslHandlerConfigured(pipeline)) {
         SslHandler sslHandler = createSslHandler(requestUri.getHost(), requestUri.getExplicitPort());
         whenHanshaked = sslHandler.handshakeFuture();
-        pipeline.addBefore(CHUNKED_WRITER_HANDLER, SSL_HANDLER, sslHandler);
+        pipeline.addBefore(INFLATER_HANDLER, SSL_HANDLER, sslHandler);
       }
       pipeline.addAfter(SSL_HANDLER, HTTP_CLIENT_CODEC, newHttpClientCodec());
 

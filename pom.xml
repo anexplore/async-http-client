@@ -9,7 +9,7 @@
   <groupId>org.asynchttpclient</groupId>
   <artifactId>async-http-client-project</artifactId>
   <name>Asynchronous Http Client Project</name>
-  <version>2.5.3-SNAPSHOT</version>
+  <version>2.5.5-SNAPSHOT</version>
   <packaging>pom</packaging>
   <description>
     The Async Http Client (AHC) library's purpose is to allow Java
@@ -402,7 +402,7 @@
     <surefire.redirectTestOutputToFile>true</surefire.redirectTestOutputToFile>
     <source.property>1.8</source.property>
     <target.property>1.8</target.property>
-    <netty.version>4.1.29.Final</netty.version>
+    <netty.version>4.1.30.Final</netty.version>
     <slf4j.version>1.7.25</slf4j.version>
     <reactive-streams.version>1.0.2</reactive-streams.version>
     <activation.version>1.2.0</activation.version>
