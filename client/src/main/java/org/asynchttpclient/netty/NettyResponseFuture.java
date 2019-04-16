@@ -95,7 +95,6 @@ public final class NettyResponseFuture<V> implements ListenableFuture<V> {
   private volatile int isCancelled = 0;
   private volatile int inAuth = 0;
   private volatile int inProxyAuth = 0;
-  private volatile int statusReceived = 0;
   // raw size of the lastest http body part size
   @SuppressWarnings("unused")
   private volatile int latestRawBodyPartSize = 0;
@@ -558,7 +557,6 @@ public final class NettyResponseFuture<V> implements ListenableFuture<V> {
             ",\n\tredirectCount=" + redirectCount + //
             ",\n\ttimeoutsHolder=" + TIMEOUTS_HOLDER_FIELD.get(this) + //
             ",\n\tinAuth=" + inAuth + //
-            ",\n\tstatusReceived=" + statusReceived + //
             ",\n\ttouch=" + touch + //
             '}';
   }

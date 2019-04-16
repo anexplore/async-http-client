@@ -84,6 +84,7 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
   private final int connectionTtl;
   private final int maxConnections;
   private final int maxConnectionsPerHost;
+  private final int acquireFreeChannelTimeout;
   private final ChannelPool channelPool;
   private final ConnectionSemaphoreFactory connectionSemaphoreFactory;
   private final KeepAliveStrategy keepAliveStrategy;
@@ -164,6 +165,7 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
                                        int connectionTtl,
                                        int maxConnections,
                                        int maxConnectionsPerHost,
+                                       int acquireFreeChannelTimeout,
                                        ChannelPool channelPool,
                                        ConnectionSemaphoreFactory connectionSemaphoreFactory,
                                        KeepAliveStrategy keepAliveStrategy,
@@ -252,6 +254,7 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
     this.connectionTtl = connectionTtl;
     this.maxConnections = maxConnections;
     this.maxConnectionsPerHost = maxConnectionsPerHost;
+    this.acquireFreeChannelTimeout = acquireFreeChannelTimeout;
     this.channelPool = channelPool;
     this.connectionSemaphoreFactory = connectionSemaphoreFactory;
     this.keepAliveStrategy = keepAliveStrategy;
@@ -447,6 +450,9 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
   public int getMaxConnectionsPerHost() {
     return maxConnectionsPerHost;
   }
+
+  @Override
+  public int getAcquireFreeChannelTimeout() { return acquireFreeChannelTimeout; }
 
   @Override
   public ChannelPool getChannelPool() {
@@ -704,6 +710,7 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
     private int connectionTtl = defaultConnectionTtl();
     private int maxConnections = defaultMaxConnections();
     private int maxConnectionsPerHost = defaultMaxConnectionsPerHost();
+    private int acquireFreeChannelTimeout = defaultAcquireFreeChannelTimeout();
     private ChannelPool channelPool;
     private ConnectionSemaphoreFactory connectionSemaphoreFactory;
     private KeepAliveStrategy keepAliveStrategy = new DefaultKeepAliveStrategy();
@@ -1001,6 +1008,16 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
       return this;
     }
 
+    /**
+     * Sets the maximum duration in milliseconds to acquire a free channel to send a request
+     * @param acquireFreeChannelTimeout maximum duration in milliseconds to acquire a free channel to send a request
+     * @return the same builder instance
+     */
+    public Builder setAcquireFreeChannelTimeout(int acquireFreeChannelTimeout) {
+      this.acquireFreeChannelTimeout = acquireFreeChannelTimeout;
+      return this;
+    }
+
     public Builder setChannelPool(ChannelPool channelPool) {
       this.channelPool = channelPool;
       return this;
@@ -1264,6 +1281,7 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
               connectionTtl,
               maxConnections,
               maxConnectionsPerHost,
+              acquireFreeChannelTimeout,
               channelPool,
               connectionSemaphoreFactory,
               keepAliveStrategy,
