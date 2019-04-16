@@ -29,6 +29,7 @@ import org.asynchttpclient.netty.NettyResponseStatus;
 import org.asynchttpclient.netty.channel.ChannelManager;
 import org.asynchttpclient.netty.channel.Channels;
 import org.asynchttpclient.netty.request.NettyRequestSender;
+import org.asynchttpclient.util.HttpUtils;
 
 import java.io.IOException;
 
@@ -75,11 +76,12 @@ public final class HttpHandler extends AsyncHttpClientHandler {
     NettyResponseStatus status = new NettyResponseStatus(future.getUri(), response, channel);
     HttpHeaders responseHeaders = response.headers();
     // check content-length @anexplore
-    if (config.getMaxResponseBodySize() > 0) {
+    int maxResponseBodySize = HttpUtils.computeMaxResponseBodySize(config, future.getTargetRequest());
+    if (maxResponseBodySize > 0) {
       Integer contentLength = responseHeaders.getInt(HttpHeaderNames.CONTENT_LENGTH);
-      if (contentLength != null && contentLength > config.getMaxResponseBodySize()) {
+      if (contentLength != null && contentLength > maxResponseBodySize) {
         throw new TooLongResponseBodyException(
-            String.format("response body size %d exceed max size %d", contentLength, config.getMaxResponseBodySize()));
+            String.format("response body size %d exceed max size %d", contentLength, maxResponseBodySize));
       }
     }
     if (!interceptors.exitAfterIntercept(channel, future, handler, response, status, responseHeaders)) {
@@ -116,11 +118,12 @@ public final class HttpHandler extends AsyncHttpClientHandler {
       HttpResponseBodyPart bodyPart = config.getResponseBodyPartFactory().newResponseBodyPart(buf, rawBodyPartSize, last);
       abort = handler.onBodyPartReceived(bodyPart) == State.ABORT;
       // exceed max body size ? add by @anexplore
-      if (config.getMaxResponseBodySize() > 0) {
+      int maxResponseBodySize = HttpUtils.computeMaxResponseBodySize(config, future.getTargetRequest());
+      if (maxResponseBodySize > 0) {
         int currentRealBodySize = future.addAndGetRealBodySize(bodyPart.length());
-        if (currentRealBodySize > config.getMaxResponseBodySize()) {
+        if (currentRealBodySize > maxResponseBodySize) {
           throw new TooLongResponseBodyException(
-              String.format("response body size %d exceed max size %d", currentRealBodySize, config.getMaxResponseBodySize()));
+              String.format("response body size %d exceed max size %d", currentRealBodySize, maxResponseBodySize));
         }
       }
     }

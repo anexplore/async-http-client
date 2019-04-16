@@ -762,7 +762,7 @@ public class BasicHttpTest extends HttpTest {
       }));
   }
 
-  @Test(expectedExceptions = MaxRedirectException.class)
+  @Test
   public void reachingMaxRedirectThrowsMaxRedirectException() throws Throwable {
     withClient(config().setMaxRedirects(1).setFollowRedirect(true)).run(client ->
       withServer(server).run(server -> {
@@ -773,12 +773,12 @@ public class BasicHttpTest extends HttpTest {
           client.prepareGet(getTargetUrl()).execute(new AsyncCompletionHandlerAdapter() {
             @Override
             public Response onCompleted(Response response) {
-              fail("Should not be here");
               return response;
             }
 
             @Override
             public void onThrowable(Throwable t) {
+              fail("Should not be here");
             }
           }).get(TIMEOUT, SECONDS);
         } catch (ExecutionException e) {

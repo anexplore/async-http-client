@@ -135,7 +135,14 @@ public class HttpUtils {
   public static boolean followRedirect(AsyncHttpClientConfig config, Request request) {
     return request.getFollowRedirect() != null ? request.getFollowRedirect() : config.isFollowRedirect();
   }
+  
+  public static int computeMaxResponseBodySize(AsyncHttpClientConfig config, Request request) {
+    return request.getMaxResponseBodySize() != null ? request.getMaxResponseBodySize() : config.getMaxResponseBodySize();
+  }
 
+  public static int computeMaxRedirects(AsyncHttpClientConfig config, Request request) {
+    return request.getMaxRedirects() != null ? request.getMaxRedirects() : config.getMaxRedirects();
+  }  
   public static ByteBuffer urlEncodeFormParams(List<Param> params, Charset charset) {
     return StringUtils.charSequence2ByteBuffer(urlEncodeFormParams0(params, charset), US_ASCII);
   }

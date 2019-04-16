@@ -504,7 +504,7 @@ public final class NettyRequestSender {
         abort(future.channel(), future, e);
         return false;
       }
-
+      future.prepareRetry();
       try {
         sendNextRequest(future.getCurrentRequest(), future);
         return true;
@@ -588,7 +588,7 @@ public final class NettyRequestSender {
     future.setAsyncHandler(fc.getAsyncHandler());
     future.setChannelState(ChannelState.NEW);
     future.touch();
-
+    
     LOGGER.debug("\n\nReplaying Request {}\n for Future {}\n", newRequest, future);
     try {
       future.getAsyncHandler().onRetry();
@@ -598,6 +598,7 @@ public final class NettyRequestSender {
       return;
     }
 
+    future.prepareRetry();
     channelManager.drainChannelAndOffer(channel, future);
     sendNextRequest(newRequest, future);
   }

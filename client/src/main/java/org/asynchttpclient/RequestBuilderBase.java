@@ -82,6 +82,7 @@ public abstract class RequestBuilderBase<T extends RequestBuilderBase<T>> {
   protected File file;
   protected Boolean followRedirect;
   protected Integer maxRedirects;
+  protected Integer maxResponseBodySize;
   protected int requestTimeout;
   protected int readTimeout;
   protected long rangeOffset;
@@ -131,6 +132,8 @@ public abstract class RequestBuilderBase<T extends RequestBuilderBase<T>> {
     this.realm = prototype.getRealm();
     this.file = prototype.getFile();
     this.followRedirect = prototype.getFollowRedirect();
+    this.maxRedirects = prototype.getMaxRedirects();
+    this.maxResponseBodySize = prototype.getMaxResponseBodySize();
     this.requestTimeout = prototype.getRequestTimeout();
     this.readTimeout = prototype.getReadTimeout();
     this.rangeOffset = prototype.getRangeOffset();
@@ -495,16 +498,21 @@ public abstract class RequestBuilderBase<T extends RequestBuilderBase<T>> {
     return asDerivedType();
   }
 
-  public T setFollowRedirect(boolean followRedirect) {
+  public T setFollowRedirect(Boolean followRedirect) {
     this.followRedirect = followRedirect;
     return asDerivedType();
   }
   
-  public T setMaxRedirects(int maxRedirects) {
+  public T setMaxRedirects(Integer maxRedirects) {
     this.maxRedirects = maxRedirects;
     return asDerivedType();
   }
 
+  public T setMaxResponseBodySize(Integer maxResponseBodySize) {
+    this.maxResponseBodySize = maxResponseBodySize;
+    return asDerivedType();
+  }
+  
   public T setRequestTimeout(int requestTimeout) {
     this.requestTimeout = requestTimeout;
     return asDerivedType();
@@ -582,6 +590,7 @@ public abstract class RequestBuilderBase<T extends RequestBuilderBase<T>> {
     rb.file = this.file;
     rb.followRedirect = this.followRedirect;
     rb.maxRedirects = this.maxRedirects;
+    rb.maxResponseBodySize = this.maxResponseBodySize;
     rb.requestTimeout = this.requestTimeout;
     rb.rangeOffset = this.rangeOffset;
     rb.charset = this.charset;
@@ -645,6 +654,7 @@ public abstract class RequestBuilderBase<T extends RequestBuilderBase<T>> {
             rb.file,
             rb.followRedirect,
             rb.maxRedirects,
+            rb.maxResponseBodySize,
             rb.requestTimeout,
             rb.readTimeout,
             rb.rangeOffset,

@@ -543,6 +543,12 @@ public final class NettyResponseFuture<V> implements ListenableFuture<V> {
     this.proxyRealm = proxyRealm;
   }
 
+  public void prepareRetry() {
+    RAW_BODY_SIZE_UPDATER.getAndSet(this, 0);
+    REAL_BODY_SIZE_UPDATER.getAndSet(this, 0);
+    REDIRECT_COUNT_UPDATER.getAndSet(this, 0);
+  }
+  
   @Override
   public String toString() {
     return "NettyResponseFuture{" + //

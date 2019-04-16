@@ -158,6 +158,12 @@ public interface Request {
   Integer getMaxRedirects();
   
   /**
+   * add by @anexplore
+   * @return max allowed response body size
+   */
+  Integer getMaxResponseBodySize();
+  
+  /**
    * @return the request timeout. Non zero values means "override config value".
    */
   int getRequestTimeout();

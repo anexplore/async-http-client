@@ -10,6 +10,11 @@
 * 新增max http response body size， 新增TooLongResponseBodyException
 * 新增InputTrafficCountHandler统计http response body原始数据大小(解压之前)
 
+#### 2019-04-16
+*  给Request添加maxResponseBodySize参数使得可以配置单个Request的最大可接受响应体大小
+* 超出最大跳转次数后由抛出异常改为返回最后一次跳转的HTTP Response 
+
+
 ------
 Follow [@AsyncHttpClient](https://twitter.com/AsyncHttpClient) on Twitter.
 

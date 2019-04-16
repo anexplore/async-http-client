@@ -56,6 +56,7 @@ public class DefaultRequest implements Request {
   private final File file;
   private final Boolean followRedirect;
   private final Integer maxRedirects;
+  private final Integer maxResponseBodySize;
   private final int requestTimeout;
   private final int readTimeout;
   private final long rangeOffset;
@@ -85,6 +86,7 @@ public class DefaultRequest implements Request {
                         File file,
                         Boolean followRedirect,
                         Integer maxRedirects,
+                        Integer maxResponseBodySize,
                         int requestTimeout,
                         int readTimeout,
                         long rangeOffset,
@@ -111,6 +113,7 @@ public class DefaultRequest implements Request {
     this.file = file;
     this.followRedirect = followRedirect;
     this.maxRedirects = maxRedirects;
+    this.maxResponseBodySize = maxResponseBodySize;
     this.requestTimeout = requestTimeout;
     this.readTimeout = readTimeout;
     this.rangeOffset = rangeOffset;
@@ -225,6 +228,12 @@ public class DefaultRequest implements Request {
     return maxRedirects;
   }
 
+  /*add by @anexplore*/
+  @Override
+  public Integer getMaxResponseBodySize() {
+    return maxResponseBodySize;
+  }
+  
   @Override
   public int getRequestTimeout() {
     return requestTimeout;
