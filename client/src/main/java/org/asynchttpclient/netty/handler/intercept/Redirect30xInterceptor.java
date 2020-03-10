@@ -149,6 +149,9 @@ public class Redirect30xInterceptor {
               requestBuilder.addOrReplaceCookie(cookie);
         } else {
           // When CookieStore is null, propagate set-cookie. add by @anexplore
+          if (request.getCookies() != null) {
+            requestBuilder.setCookies(request.getCookies());
+          }
           for (String cookieStr : responseHeaders.getAll(SET_COOKIE)) {
             Cookie c = cookieDecoder.decode(cookieStr);
             if (c != null) {
@@ -210,7 +213,7 @@ public class Redirect30xInterceptor {
   
   /**
    * add by @anexplore
-   * @param request
+   * @param response http response
    * @return if has Refresh header
    */
   private boolean hasRefreshHeader(HttpResponse response) {
@@ -219,7 +222,7 @@ public class Redirect30xInterceptor {
   
   /**
    * add by @anexplore
-   * @param refresh
+   * @param refresh refresh header string
    * @return refresh target uri
    */
   private String decodeRefreshUri(String refresh) {
