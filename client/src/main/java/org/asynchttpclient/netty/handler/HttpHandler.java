@@ -70,14 +70,17 @@ public final class HttpHandler extends AsyncHttpClientHandler {
   private void handleHttpResponse(final HttpResponse response, final Channel channel, final NettyResponseFuture<?> future, AsyncHandler<?> handler) throws Exception {
 
     HttpRequest httpRequest = future.getNettyRequest().getHttpRequest();
+    HttpHeaders responseHeaders = response.headers();
+    // process non ascii chars
+    HttpUtils.encodeHttpHeadersForNonAsciiChars(responseHeaders);
     logger.debug("\n\nRequest {}\n\nResponse {}\n", httpRequest, response);
 
     future.setKeepAlive(config.getKeepAliveStrategy().keepAlive((InetSocketAddress) channel.remoteAddress(), future.getTargetRequest(), httpRequest, response));
 
     NettyResponseStatus status = new NettyResponseStatus(future.getUri(), response, channel);
-    HttpHeaders responseHeaders = response.headers();
+
     // check content-length @anexplore
-    int maxResponseBodySize = HttpUtils.computeMaxResponseBodySize(config, future.getTargetRequest());
+    int maxResponseBodySize = HttpUtils.maxResponseBodySize(config, future.getTargetRequest());
     if (maxResponseBodySize > 0) {
       Integer contentLength = responseHeaders.getInt(HttpHeaderNames.CONTENT_LENGTH);
       if (contentLength != null && contentLength > maxResponseBodySize) {
@@ -119,7 +122,7 @@ public final class HttpHandler extends AsyncHttpClientHandler {
       HttpResponseBodyPart bodyPart = config.getResponseBodyPartFactory().newResponseBodyPart(buf, rawBodyPartSize, last);
       abort = handler.onBodyPartReceived(bodyPart) == State.ABORT;
       // exceed max body size ? add by @anexplore
-      int maxResponseBodySize = HttpUtils.computeMaxResponseBodySize(config, future.getTargetRequest());
+      int maxResponseBodySize = HttpUtils.maxResponseBodySize(config, future.getTargetRequest());
       if (maxResponseBodySize > 0) {
         int currentRealBodySize = future.addAndGetRealBodySize(bodyPart.length());
         if (currentRealBodySize > maxResponseBodySize) {

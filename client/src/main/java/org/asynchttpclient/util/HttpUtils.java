@@ -13,6 +13,8 @@
 package org.asynchttpclient.util;
 
 import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.ReadOnlyHttpHeaders;
 import io.netty.util.AsciiString;
 import org.asynchttpclient.AsyncHttpClientConfig;
 import org.asynchttpclient.Param;
@@ -24,6 +26,7 @@ import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static java.nio.charset.StandardCharsets.*;
@@ -136,11 +139,11 @@ public class HttpUtils {
     return request.getFollowRedirect() != null ? request.getFollowRedirect() : config.isFollowRedirect();
   }
   
-  public static int computeMaxResponseBodySize(AsyncHttpClientConfig config, Request request) {
+  public static int maxResponseBodySize(AsyncHttpClientConfig config, Request request) {
     return request.getMaxResponseBodySize() != null ? request.getMaxResponseBodySize() : config.getMaxResponseBodySize();
   }
 
-  public static int computeMaxRedirects(AsyncHttpClientConfig config, Request request) {
+  public static int maxRedirects(AsyncHttpClientConfig config, Request request) {
     return request.getMaxRedirects() != null ? request.getMaxRedirects() : config.getMaxRedirects();
   }  
   public static ByteBuffer urlEncodeFormParams(List<Param> params, Charset charset) {
@@ -184,5 +187,31 @@ public class HttpUtils {
       return acceptEncoding.subSequence(0, acceptEncoding.length() - BROTLY_ACCEPT_ENCODING_SUFFIX.length());
     }
     return acceptEncoding;
+  }
+
+  private static String encodeAsciiToUtf8String(String value) {
+    if (value == null) {
+      return null;
+    }
+    byte[] valueBytes = new byte[value.length()];
+    for (int i = 0; i < valueBytes.length; i++) {
+      valueBytes[i] = (byte) (value.charAt(i) & 0xFF);
+    }
+    return new String(valueBytes, UTF_8);
+  }
+
+  /**
+   * re encode http headers which may be contains no ascii , the non ascii char must be utf8
+   * @param headers http headers
+   */
+  public static void encodeHttpHeadersForNonAsciiChars(final HttpHeaders headers) {
+    if (headers instanceof ReadOnlyHttpHeaders) {
+      return;
+    }
+    HttpHeaders copyHeaders = headers.copy();
+    headers.clear();
+    for (Map.Entry<String, String> entry : copyHeaders.entries()) {
+      headers.add(encodeAsciiToUtf8String(entry.getKey()), encodeAsciiToUtf8String(entry.getValue()));
+    }
   }
 }
