@@ -14,6 +14,8 @@
 *  给Request添加maxResponseBodySize参数使得可以配置单个Request的最大可接受响应体大小
 * 超出最大跳转次数后由抛出异常改为返回最后一次跳转的HTTP Response 
 
+#### 2020-05-29
+* 添加HTTP头非ASCII强制重新使用utf8编码 解决非标准HTTP头中非ASCII码字符乱码问题(仅支持utf8)
 
 ------
 Follow [@AsyncHttpClient](https://twitter.com/AsyncHttpClient) on Twitter.
