@@ -35,6 +35,7 @@ import org.asynchttpclient.netty.NettyResponseFuture;
 import org.asynchttpclient.netty.OnLastHttpContentCallback;
 import org.asynchttpclient.netty.SimpleFutureListener;
 import org.asynchttpclient.netty.channel.*;
+import org.asynchttpclient.netty.handler.StreamedResponsePublisher;
 import org.asynchttpclient.netty.timeout.TimeoutsHolder;
 import org.asynchttpclient.proxy.ProxyServer;
 import org.asynchttpclient.resolver.RequestHostnameResolver;
@@ -437,8 +438,8 @@ public final class NettyRequestSender {
   }
 
   private void configureTransferAdapter(AsyncHandler<?> handler, HttpRequest httpRequest) {
-    HttpHeaders h = new DefaultHttpHeaders(false).set(httpRequest.headers());
-    TransferCompletionHandler.class.cast(handler).headers(h);
+    HttpHeaders h = new DefaultHttpHeaders().set(httpRequest.headers());
+    ((TransferCompletionHandler) handler).headers(h);
   }
 
   private void scheduleRequestTimeout(NettyResponseFuture<?> nettyResponseFuture,
@@ -462,8 +463,15 @@ public final class NettyRequestSender {
 
   public void abort(Channel channel, NettyResponseFuture<?> future, Throwable t) {
 
-    if (channel != null && channel.isActive()) {
-      channelManager.closeChannel(channel);
+    if (channel != null) {
+      Object attribute = Channels.getAttribute(future.channel());
+      if (attribute instanceof StreamedResponsePublisher) {
+        ((StreamedResponsePublisher) attribute).setError(t);
+      }
+
+      if (channel.isActive()) {
+        channelManager.closeChannel(channel);
+      }
     }
 
     if (!future.isDone()) {

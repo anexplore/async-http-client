@@ -109,6 +109,7 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
 
   // cookie store
   private final CookieStore cookieStore;
+  private final int expiredCookieEvictionDelay;
 
   // internals
   private final String threadPoolName;
@@ -123,6 +124,7 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
   private final ByteBufAllocator allocator;
   private final boolean tcpNoDelay;
   private final boolean soReuseAddress;
+  private final boolean soKeepAlive;
   private final int soLinger;
   private final int soSndBuf;
   private final int soRcvBuf;
@@ -133,6 +135,8 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
   private final ResponseBodyPartFactory responseBodyPartFactory;
   private final int ioThreadsCount;
   private final int maxResponseBodySize;
+  private final long hashedWheelTimerTickDuration;
+  private final int hashedWheelTimerSize;
 
   private DefaultAsyncHttpClientConfig(// http
                                        boolean followRedirect,
@@ -190,10 +194,12 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
 
                                        // cookie store
                                        CookieStore cookieStore,
+                                       int expiredCookieEvictionDelay,
 
                                        // tuning
                                        boolean tcpNoDelay,
                                        boolean soReuseAddress,
+                                       boolean soKeepAlive,
                                        int soLinger,
                                        int soSndBuf,
                                        int soRcvBuf,
@@ -217,7 +223,9 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
                                        Consumer<Channel> wsAdditionalChannelInitializer,
                                        ResponseBodyPartFactory responseBodyPartFactory,
                                        int ioThreadsCount,
-                                       int maxResponseBodySize) {
+                                       int maxResponseBodySize,
+                                       long hashedWheelTimerTickDuration,
+                                       int hashedWheelTimerSize) {
 
     // http
     this.followRedirect = followRedirect;
@@ -279,10 +287,12 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
 
     // cookie store
     this.cookieStore = cookieStore;
+    this.expiredCookieEvictionDelay = expiredCookieEvictionDelay;
 
     // tuning
     this.tcpNoDelay = tcpNoDelay;
     this.soReuseAddress = soReuseAddress;
+    this.soKeepAlive = soKeepAlive;
     this.soLinger = soLinger;
     this.soSndBuf = soSndBuf;
     this.soRcvBuf = soRcvBuf;
@@ -305,6 +315,8 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
     this.responseBodyPartFactory = responseBodyPartFactory;
     this.ioThreadsCount = ioThreadsCount;
     this.maxResponseBodySize = maxResponseBodySize;
+    this.hashedWheelTimerTickDuration = hashedWheelTimerTickDuration;
+    this.hashedWheelTimerSize = hashedWheelTimerSize;
   }
 
   @Override
@@ -552,6 +564,11 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
     return cookieStore;
   }
 
+  @Override
+  public int expiredCookieEvictionDelay() {
+    return expiredCookieEvictionDelay;
+  }
+
   // tuning
   @Override
   public boolean isTcpNoDelay() {
@@ -561,6 +578,11 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
   @Override
   public boolean isSoReuseAddress() {
     return soReuseAddress;
+  }
+
+  @Override
+  public boolean isSoKeepAlive() {
+    return soKeepAlive;
   }
 
   @Override
@@ -632,6 +654,16 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
   @Override
   public Timer getNettyTimer() {
     return nettyTimer;
+  }
+
+  @Override
+  public long getHashedWheelTimerTickDuration() {
+    return hashedWheelTimerTickDuration;
+  }
+
+  @Override
+  public int getHashedWheelTimerSize() {
+    return hashedWheelTimerSize;
   }
 
   @Override
@@ -730,10 +762,12 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
 
     // cookie store
     private CookieStore cookieStore = new ThreadSafeCookieStore();
+    private int expiredCookieEvictionDelay = defaultExpiredCookieEvictionDelay();
 
     // tuning
     private boolean tcpNoDelay = defaultTcpNoDelay();
     private boolean soReuseAddress = defaultSoReuseAddress();
+    private boolean soKeepAlive = defaultSoKeepAlive();
     private int soLinger = defaultSoLinger();
     private int soSndBuf = defaultSoSndBuf();
     private int soRcvBuf = defaultSoRcvBuf();
@@ -756,7 +790,8 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
     private ResponseBodyPartFactory responseBodyPartFactory = ResponseBodyPartFactory.EAGER;
     private int ioThreadsCount = defaultIoThreadsCount();
     private int maxResponseBodySize = defaultMaxResponseBodySize();
-    
+    private long hashedWheelTickDuration = defaultHashedWheelTimerTickDuration();
+    private int hashedWheelSize = defaultHashedWheelTimerSize();
     public Builder() {
     }
 
@@ -817,6 +852,7 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
       // tuning
       tcpNoDelay = config.isTcpNoDelay();
       soReuseAddress = config.isSoReuseAddress();
+      soKeepAlive = config.isSoKeepAlive();
       soLinger = config.getSoLinger();
       soSndBuf = config.getSoSndBuf();
       soRcvBuf = config.getSoRcvBuf();
@@ -838,6 +874,8 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
       responseBodyPartFactory = config.getResponseBodyPartFactory();
       ioThreadsCount = config.getIoThreadsCount();
       maxResponseBodySize = config.getMaxResponseBodySize();
+      hashedWheelTickDuration = config.getHashedWheelTimerTickDuration();
+      hashedWheelSize = config.getHashedWheelTimerSize();
     }
 
     // http
@@ -1126,6 +1164,11 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
       return this;
     }
 
+    public Builder setExpiredCookieEvictionDelay(int expiredCookieEvictionDelay) {
+      this.expiredCookieEvictionDelay = expiredCookieEvictionDelay;
+      return this;
+    }
+
     // tuning
     public Builder setTcpNoDelay(boolean tcpNoDelay) {
       this.tcpNoDelay = tcpNoDelay;
@@ -1134,6 +1177,11 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
 
     public Builder setSoReuseAddress(boolean soReuseAddress) {
       this.soReuseAddress = soReuseAddress;
+      return this;
+    }
+
+    public Builder setSoKeepAlive(boolean soKeepAlive) {
+      this.soKeepAlive = soKeepAlive;
       return this;
     }
 
@@ -1180,6 +1228,16 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
 
     public Builder setChunkedFileChunkSize(int chunkedFileChunkSize) {
       this.chunkedFileChunkSize = chunkedFileChunkSize;
+      return this;
+    }
+
+    public Builder setHashedWheelTickDuration(long hashedWheelTickDuration) {
+      this.hashedWheelTickDuration = hashedWheelTickDuration;
+      return this;
+    }
+
+    public Builder setHashedWheelSize(int hashedWheelSize) {
+      this.hashedWheelSize = hashedWheelSize;
       return this;
     }
 
@@ -1300,8 +1358,10 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
               responseFilters.isEmpty() ? Collections.emptyList() : Collections.unmodifiableList(responseFilters),
               ioExceptionFilters.isEmpty() ? Collections.emptyList() : Collections.unmodifiableList(ioExceptionFilters),
               cookieStore,
+              expiredCookieEvictionDelay,
               tcpNoDelay,
               soReuseAddress,
+              soKeepAlive,
               soLinger,
               soSndBuf,
               soRcvBuf,
@@ -1323,7 +1383,9 @@ public class DefaultAsyncHttpClientConfig implements AsyncHttpClientConfig {
               wsAdditionalChannelInitializer,
               responseBodyPartFactory,
               ioThreadsCount,
-              maxResponseBodySize);
+              maxResponseBodySize,
+              hashedWheelTickDuration,
+              hashedWheelSize);
     }
   }
 }

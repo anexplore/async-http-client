@@ -199,6 +199,13 @@ public interface AsyncHttpClientConfig {
   CookieStore getCookieStore();
 
   /**
+   * Return the delay in milliseconds to evict expired cookies from {@linkplain CookieStore}
+   *
+   * @return the delay in milliseconds to evict expired cookies from {@linkplain CookieStore}
+   */
+  int expiredCookieEvictionDelay();
+
+  /**
    * Return the number of time the library will retry when an {@link java.io.IOException} is throw by the remote server
    *
    * @return the number of time the library will retry when an {@link java.io.IOException} is throw by the remote server
@@ -306,6 +313,16 @@ public interface AsyncHttpClientConfig {
 
   Timer getNettyTimer();
 
+  /**
+   * @return the duration between tick of {@link io.netty.util.HashedWheelTimer}
+   */
+  long getHashedWheelTimerTickDuration();
+
+  /**
+   * @return the size of the hashed wheel {@link io.netty.util.HashedWheelTimer}
+   */
+  int getHashedWheelTimerSize();
+
   KeepAliveStrategy getKeepAliveStrategy();
 
   boolean isValidateResponseHeaders();
@@ -317,6 +334,8 @@ public interface AsyncHttpClientConfig {
   boolean isTcpNoDelay();
 
   boolean isSoReuseAddress();
+
+  boolean isSoKeepAlive();
 
   int getSoLinger();
 

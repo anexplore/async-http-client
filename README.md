@@ -25,17 +25,46 @@ The library also supports the WebSocket Protocol.
 
 It's built on top of [Netty](https://github.com/netty/netty). It's currently compiled on Java 8 but runs on Java 9 too.
 
+## New Roadmap RFCs!
+
+Well, not really RFCs, but as [I](https://github.com/TomGranot) am ramping up to release a new version, I would appreciate the comments from the community. Please add an issue and [label it RFC](https://github.com/AsyncHttpClient/async-http-client/labels/RFC) and I'll take a look! 
+
+## This Repository is Actively Maintained
+
+[@TomGranot](https://github.com/TomGranot) is the current maintainer of this repository. You should feel free to reach out to him in an issue here or on [Twitter](https://twitter.com/TomGranot) for anything regarding this repository.
+
 ## Installation
 
-Binaries are deployed on Maven central:
+Binaries are deployed on Maven Central.
+
+Import the AsyncHttpClient Bill of Materials (BOM) to add dependency management for AsyncHttpClient artifacts to your project:
 
 ```xml
-<dependency>
-	<groupId>org.asynchttpclient</groupId>
-	<artifactId>async-http-client</artifactId>
-	<version>LATEST_VERSION</version>
-</dependency>
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.asynchttpclient</groupId>
+            <artifactId>async-http-client-bom</artifactId>
+            <version>LATEST_VERSION</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
 ```
+
+Add a dependency on the main AsyncHttpClient artifact: 
+
+```xml
+<dependencies>
+    <dependency>
+    	<groupId>org.asynchttpclient</groupId>
+    	<artifactId>async-http-client</artifactId>
+    </dependency>
+</dependencies>
+```
+
+The `async-http-client-extras-*` and other modules can also be added without having to specify the version for each dependency, because they are all managed via the BOM.
 
 ## Version
 
@@ -101,7 +130,7 @@ Future<Response> whenResponse = asyncHttpClient.prepareGet("http://www.example.c
 
 // unbound
 Request request = get("http://www.example.com/").build();
-Future<Response> whenResponse = asyncHttpClient.execute(request);
+Future<Response> whenResponse = asyncHttpClient.executeRequest(request);
 ```
 
 #### Setting Request Body
@@ -293,9 +322,10 @@ Response response = c.executeRequest(propFindRequest, new AsyncHandler() {
 You can find more information on Jean-François Arcand's blog.  Jean-François is the original author of this library.
 Code is sometimes not up-to-date but gives a pretty good idea of advanced features.
 
-* https://jfarcand.wordpress.com/2010/12/21/going-asynchronous-using-asynchttpclient-the-basic/
-* https://jfarcand.wordpress.com/2011/01/04/going-asynchronous-using-asynchttpclient-the-complex/
-* https://jfarcand.wordpress.com/2011/12/21/writing-websocket-clients-using-asynchttpclient/
+* http://web.archive.org/web/20111224171448/http://jfarcand.wordpress.com/2011/01/12/going-asynchronous-using-asynchttpclient-for-dummies/
+* http://web.archive.org/web/20111224171241/http://jfarcand.wordpress.com/2010/12/21/going-asynchronous-using-asynchttpclient-the-basic/
+* http://web.archive.org/web/20111224162752/http://jfarcand.wordpress.com/2011/01/04/going-asynchronous-using-asynchttpclient-the-complex/
+* http://web.archive.org/web/20120218183108/http://jfarcand.wordpress.com/2011/12/21/writing-websocket-clients-using-asynchttpclient/
 
 ## User Group
 
