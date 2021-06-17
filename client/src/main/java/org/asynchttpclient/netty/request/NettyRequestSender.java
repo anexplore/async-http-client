@@ -275,6 +275,12 @@ public final class NettyRequestSender {
 
     // some headers are only set when performing the first request
     HttpHeaders headers = future.getNettyRequest().getHttpRequest().headers();
+    if(proxy != null && proxy.getCustomHeaders() != null ) {
+      HttpHeaders customHeaders = proxy.getCustomHeaders().apply(request);
+      if(customHeaders != null) {
+        headers.add(customHeaders);
+      }
+    }
     Realm realm = future.getRealm();
     Realm proxyRealm = future.getProxyRealm();
     requestFactory.addAuthorizationHeader(headers, perConnectionAuthorizationHeader(request, proxy, realm));
@@ -464,7 +470,7 @@ public final class NettyRequestSender {
   public void abort(Channel channel, NettyResponseFuture<?> future, Throwable t) {
 
     if (channel != null) {
-      Object attribute = Channels.getAttribute(future.channel());
+      Object attribute = Channels.getAttribute(channel);
       if (attribute instanceof StreamedResponsePublisher) {
         ((StreamedResponsePublisher) attribute).setError(t);
       }

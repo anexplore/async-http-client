@@ -1,7 +1,7 @@
 # This workflow is designed to build PRs for AHC. Note that it does not actually publish AHC, just builds and test it.
 # Docs: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
 
-name: Java CI with Maven - PR Action
+name: Test PR
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 1.8

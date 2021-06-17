@@ -38,6 +38,8 @@ import java.util.Set;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.*;
 import static org.asynchttpclient.util.HttpConstants.Methods.GET;
+import static org.asynchttpclient.util.HttpConstants.Methods.HEAD;
+import static org.asynchttpclient.util.HttpConstants.Methods.OPTIONS;
 import static org.asynchttpclient.util.HttpConstants.ResponseStatusCodes.*;
 import static org.asynchttpclient.util.HttpConstants.ExtrasHeaders.*;
 import static org.asynchttpclient.util.HttpUtils.followRedirect;
@@ -97,7 +99,7 @@ public class Redirect30xInterceptor {
 
         String originalMethod = request.getMethod();
         boolean switchToGet = !originalMethod.equals(GET)
-                && (statusCode == MOVED_PERMANENTLY_301 || statusCode == SEE_OTHER_303 || (statusCode == FOUND_302 && !config.isStrict302Handling()));
+                && !originalMethod.equals(OPTIONS) && !originalMethod.equals(HEAD) && (statusCode == MOVED_PERMANENTLY_301 || statusCode == SEE_OTHER_303 || (statusCode == FOUND_302 && !config.isStrict302Handling()));
         boolean keepBody = statusCode == TEMPORARY_REDIRECT_307 || statusCode == PERMANENT_REDIRECT_308 || (statusCode == FOUND_302 && config.isStrict302Handling());
 
         final RequestBuilder requestBuilder = new RequestBuilder(switchToGet ? GET : originalMethod)
@@ -137,7 +139,6 @@ public class Redirect30xInterceptor {
         final Object initialPartitionKey = future.getPartitionKey();
 
         Uri newUri = Uri.create(future.getUri(), location);
-
         LOGGER.debug("Redirecting to {}", newUri);
 
         CookieStore cookieStore = config.getCookieStore();
